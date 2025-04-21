@@ -4,11 +4,11 @@
   "description": "A productivity tool for focus tracking",
   "start_url": "/index.htm",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4361ee",
+  "background_color": "#ffffff",  // White background for splash screen
+  "theme_color": "#4361ee",       // Blue color for status bar
   "icons": [
     {
-      "src": "/icon-w.png",
+      "src": "icon-w.png",
       "sizes": "192x192",
       "type": "image/png"
     }
