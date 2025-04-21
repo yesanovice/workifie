@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Work Session Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="manifest" href="manifest.json">
+
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a56d4;
+      --secondary: #3f37c9;
+      --accent: #4895ef;
+      --danger: #f72585;
+      --danger-dark: #e5177b;
+      --success: #4cc9f0;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --light-gray: #e9ecef;
+      --border-radius: 12px;
+      --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+    
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
+    
+    body { 
+      font-family: 'Inter', sans-serif;
+      background: #f5f7ff; 
+      color: var(--dark); 
+      display: flex; 
+      min-height: 100vh; 
+      line-height: 1.6;
+    }
+    
+    .sidebar { 
+      width: 280px; 
+      background: white; 
+      padding: 30px 25px; 
+      border-right: 1px solid var(--light-gray);
+      display: flex; 
+      flex-direction: column;
+      box-shadow: 2px 0 15px rgba(0, 0, 0, 0.02);
+    }
+    
+    .rightbar { 
+      width: 280px; 
+      background: white; 
+      padding: 30px 25px; 
+      border-left: 1px solid var(--light-gray);
+      box-shadow: -2px 0 15px rgba(0, 0, 0, 0.02);
+    }
+    
+    .main { 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      padding: 40px; 
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 { 
+      color: var(--dark);
+      font-size: 2.2rem; 
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .timer { 
+      font-size: 3rem; 
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+      margin: 1.5rem 0;
+      letter-spacing: 1px;
+      color: var(--dark);
+      text-align: center;
+      background: white;
+      padding: 1.5rem 2rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+    
+    button {
+      background: var(--primary);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: var(--border-radius);
+      margin: 0.5rem;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: var(--transition);
+      box-shadow: 0 2px 10px rgba(67, 97, 238, 0.3);
+    }
+    
+    button:hover { 
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button:disabled {
+      background: var(--gray);
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    
+    input {
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--light-gray);
+      margin: 1rem 0;
+      width: 100%;
+      max-width: 400px;
+      transition: var(--transition);
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.2);
+    }
+    
+    .session-list { 
+      width: 100%; 
+      margin-top: 2rem;
+    }
+    
+    .session { 
+      background: white;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--accent);
+      box-shadow: var(--box-shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+    }
+    
+    .session:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .session-details { 
+      flex: 1;
+    }
+    
+    .session-name {
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 0.5rem;
+    }
+    
+    .session-meta {
+      display: flex;
+      gap: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--gray);
+    }
+    
+    .delete-btn { 
+      background: var(--danger);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      color: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-left: 1rem;
+    }
+    
+    .delete-btn:hover { 
+      background: var(--danger-dark);
+      transform: translateY(-2px);
+    }
+    
+    .quote { 
+      font-style: italic;
+      line-height: 1.6;
+      color: var(--gray);
+      padding: 1.5rem;
+      background: white;
+      border-radius: var(--border-radius);
+      margin-bottom: 2rem;
+      box-shadow: var(--box-shadow);
+      position: relative;
+    }
+    
+    .quote::before {
+      content: '"';
+      font-size: 4rem;
+      position: absolute;
+      top: -1rem;
+      left: 0.5rem;
+      color: var(--light-gray);
+      z-index: 0;
+    }
+    
+    .quote-content {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .session-count { 
+      font-size: 2.5rem; 
+      font-weight: 700;
+      color: var(--primary);
+      text-align: center;
+      margin: 1rem 0;
+    }
+    
+    .session-count-label {
+      font-size: 1rem;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 500;
+    }
+    
+    .auth-form { 
+      background: white;
+      padding: 2.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      width: 100%;
+      max-width: 400px;
+      margin: 2rem auto;
+      text-align: center;
+    }
+    
+    .auth-form h2 { 
+      margin-bottom: 1.5rem; 
+      color: var(--dark);
+      font-weight: 600;
+    }
+    
+    .auth-toggle { 
+      background: none; 
+      border: none; 
+      color: var(--accent); 
+      text-decoration: none;
+      cursor: pointer; 
+      font-size: 0.9rem;
+      margin-top: 1rem;
+      transition: var(--transition);
+    }
+    
+    .auth-toggle:hover { 
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+    
+    .error-message { 
+      color: var(--danger); 
+      margin: 1rem 0; 
+      font-size: 0.9rem;
+      padding: 0.5rem;
+      background: rgba(247, 37, 133, 0.1);
+      border-radius: 6px;
+    }
+    
+    .hidden { 
+      display: none; 
+    }
+    
+    .user-info { 
+      margin: 1.5rem 0;
+      font-size: 0.95rem;
+      color: var(--gray);
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    .logout-btn { 
+      background: var(--danger);
+      margin-left: auto;
+    }
+    
+    .logout-btn:hover { 
+      background: var(--danger-dark);
+    }
+    
+    .badge-container { 
+      margin-top: 2rem;
+      text-align: center;
+      background: white;
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+    
+    .badge { 
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      margin: 0.5rem;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+      transition: var(--transition);
+    }
+    
+    .badge::after { 
+      content: '✓';
+      position: absolute;
+      right: -5px;
+      top: -5px;
+      background: var(--success);
+      color: white;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+    
+    .current-badge { 
+      transform: scale(1.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      margin: 1rem 0;
+      padding: 0.75rem 1.5rem;
+      font-size: 1.1rem;
+    }
+    
+    .badge-progress { 
+      width: 100%;
+      height: 10px;
+      background: var(--light-gray);
+      border-radius: 5px;
+      margin-top: 1.5rem;
+      overflow: hidden;
+    }
+    
+    .progress-bar { 
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--success));
+      transition: width 0.3s;
+      border-radius: 5px;
+    }
+    
+    .badge-info { 
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--gray);
+    }
+    
+    .badge-clown { background: #f39c12; color: white; }
+    .badge-noob { background: #e74c3c; color: white; }
+    .badge-novice { background: #9b59b6; color: white; }
+    .badge-apprentice { background: #3498db; color: white; }
+    .badge-regular { background: #1abc9c; color: white; }
+    .badge-dedicated { background: #f1c40f; color: #333; }
+    .badge-professional { background: #e67e22; color: white; }
+    .badge-master { background: #2ecc71; color: white; }
+    .badge-sigma { background: #34495e; color: white; }
+    .badge-chad { background: #8e44ad; color: white; }
+    .badge-sigma-chad { background: #c0392b; color: white; }
+    .badge-giga-chad { background: linear-gradient(45deg, #34495e, #8e44ad); color: white; }
+    .badge-sigma-giga-chad { background: linear-gradient(45deg, #34495e, #8e44ad, #c0392b); color: white; }
+    
+    .badge-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+    
+    .all-badges {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    
+    .badge-section {
+      background: white;
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+    
+    .badge-section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--gray);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .badge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 0.75rem;
+    }
+    
+    .badge-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .badge-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .badge-name {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--gray);
+    }
+    
+    .badge-requirement {
+      font-size: 0.65rem;
+      color: var(--gray);
+      opacity: 0.7;
+    }
+    
+    .locked-badge {
+      opacity: 0.5;
+      filter: grayscale(70%);
+    }
+    
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    
+    .total-hours {
+      text-align: center;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--light-gray);
+      font-size: 1.1rem;
+    }
+    
+    .total-hours strong {
+      color: var(--primary);
+    }
+    
+    @media (max-width: 1024px) {
+      .sidebar, .rightbar {
+        width: 240px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      
+      .sidebar, .rightbar {
+        width: 100%;
+        border-right: none;
+        border-left: none;
+        padding: 1.5rem;
+      }
+      
+      .rightbar {
+        order: 3;
+      }
+      
+      .main {
+        padding: 2rem;
+        order: 2;
+      }
+      
+      .badge-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .main {
+        padding: 1.5rem;
+      }
+      
+      .timer {
+        font-size: 2rem;
+        padding: 1rem;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+      
+      button {
+        width: 100%;
+        margin: 0.25rem 0;
+      }
+      
+      .session-meta {
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="quote">
+      <div class="quote-content" id="quote">"Discipline is the bridge between goals and accomplishment."</div>
+    </div>
+    <div class="user-info" id="userInfo"></div>
+    <div class="badge-container" id="badgeContainer">
+      <div class="badge-title">Current Level</div>
+      <div id="currentBadge"></div>
+      <div class="badge-progress"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="badge-info" id="badgeInfo"></div>
+      <!-- Total hours will be injected here by JavaScript -->
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="authContainer">
+      <div class="auth-form" id="loginForm">
+        <h2>Login</h2>
+        <div class="error-message" id="loginError"></div>
+        <input type="text" id="loginUsername" placeholder="Username" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button id="loginBtn">Login</button>
+        <button class="auth-toggle" id="showSignup">Need an account? Sign up</button>
+      </div>
+      <div class="auth-form hidden" id="signupForm">
+        <h2>Sign Up</h2>
+        <div class="error-message" id="signupError"></div>
+        <input type="text" id="signupUsername" placeholder="Username" required>
+        <input type="password" id="signupPassword" placeholder="Password" required>
+        <button id="signupBtn">Sign Up</button>
+        <button class="auth-toggle" id="showLogin">Already have an account? Login</button>
+      </div>
+    </div>
+
+    <div id="appContent" class="hidden">
+      <div class="app-header">
+        <h1>Work Session Tracker</h1>
+        <button class="logout-btn" id="logoutBtn">Logout</button>
+      </div>
+      
+      <div class="timer" id="timerDisplay">00:00:00.00</div>
+      
+      <input type="text" id="sessionName" placeholder="What are you working on?" />
+      
+      <div class="controls">
+        <button id="startBtn">Start Session</button>
+        <button id="stopBtn" disabled>Stop Session</button>
+      </div>
+      
+      <div class="session-list" id="sessionList"></div>
+    </div>
+  </div>
+
+  <div class="rightbar">
+    <div class="session-count-label">Sessions Completed</div>
+    <div class="session-count" id="sessionCount">0</div>
+    
+    <div class="all-badges" id="allBadges">
+      <div class="badge-section">
+        <div class="badge-section-title">Your Badges</div>
+        <div class="badge-grid" id="badgeGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const timerDisplay = document.getElementById('timerDisplay');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const sessionList = document.getElementById('sessionList');
+    const sessionCount = document.getElementById('sessionCount');
+    const sessionNameInput = document.getElementById('sessionName');
+    const quoteBox = document.getElementById('quote');
+    const userInfo = document.getElementById('userInfo');
+    const authContainer = document.getElementById('authContainer');
+    const appContent = document.getElementById('appContent');
+    const currentBadge = document.getElementById('currentBadge');
+    const badgeInfo = document.getElementById('badgeInfo');
+    const progressBar = document.getElementById('progressBar');
+    const allBadges = document.getElementById('allBadges');
+    const badgeGrid = document.getElementById('badgeGrid');
+
+    // Auth elements
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const showSignup = document.getElementById('showSignup');
+    const showLogin = document.getElementById('showLogin');
+    const loginUsername = document.getElementById('loginUsername');
+    const loginPassword = document.getElementById('loginPassword');
+    const signupUsername = document.getElementById('signupUsername');
+    const signupPassword = document.getElementById('signupPassword');
+    const loginError = document.getElementById('loginError');
+    const signupError = document.getElementById('signupError');
+
+    // App state
+    let startTime = null;
+    let timerInterval = null;
+    let currentUser = null;
+
+    const quotes = [
+      "Discipline is the bridge between goals and accomplishment. — Jim Rohn",
+      "You don't have to be extreme, just consistent.",
+      "Small steps every day lead to big results over time.",
+      "Focus on progress, not perfection.",
+      "The secret of getting ahead is getting started. — Mark Twain",
+      "Productivity is never an accident. It's always the result of commitment to excellence. — Paul J. Meyer",
+      "The way to get started is to quit talking and begin doing. — Walt Disney",
+      "Your future is created by what you do today, not tomorrow. — Robert Kiyosaki",
+      "It's not about having time, it's about making time.",
+      "Success is the sum of small efforts, repeated day in and day out. — Robert Collier"
+    ];
+
+    // Badge system configuration
+    const badgeSystem = [
+      { name: "Clown", class: "badge-clown", hours: 0, emoji: "🤡" },
+      { name: "Noob", class: "badge-noob", hours: 1, emoji: "👶" },
+      { name: "Novice", class: "badge-novice", hours: 5, emoji: "🧒" },
+      { name: "Apprentice", class: "badge-apprentice", hours: 10, emoji: "🧑‍🎓" },
+      { name: "Regular", class: "badge-regular", hours: 25, emoji: "🧑‍💼" },
+      { name: "Dedicated", class: "badge-dedicated", hours: 50, emoji: "🧑‍🔧" },
+      { name: "Professional", class: "badge-professional", hours: 100, emoji: "🧑‍⚕️" },
+      { name: "Master", class: "badge-master", hours: 250, emoji: "🧙‍♂️" },
+      { name: "Sigma", class: "badge-sigma", hours: 500, emoji: "🦸‍♂️" },
+      { name: "Chad", class: "badge-chad", hours: 750, emoji: "🧑‍🚀" },
+      { name: "Sigma Chad", class: "badge-sigma-chad", hours: 900, emoji: "🦸‍♂️" },
+      { name: "Giga Chad", class: "badge-giga-chad", hours: 950, emoji: "🧞‍♂️" },
+      { name: "Sigma Giga Chad", class: "badge-sigma-giga-chad", hours: 1000, emoji: "🦹‍♂️" }
+    ];
+
+    init();
+
+    async function hashPassword(password) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function init() {
+      const loggedInUser = localStorage.getItem('currentUser');
+      if (loggedInUser) { 
+        currentUser = JSON.parse(loggedInUser); 
+        showApp(); 
+      } else {
+        showAuth(); 
+      }
+      
+      quoteBox.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+      
+      // Event listeners
+      startBtn.addEventListener('click', startSession);
+      stopBtn.addEventListener('click', stopSession);
+      logoutBtn.addEventListener('click', logout);
+      loginBtn.addEventListener('click', login);
+      signupBtn.addEventListener('click', signup);
+      
+      showSignup.addEventListener('click', () => { 
+        loginForm.classList.add('hidden'); 
+        signupForm.classList.remove('hidden'); 
+      });
+      
+      showLogin.addEventListener('click', () => { 
+        signupForm.classList.add('hidden'); 
+        loginForm.classList.remove('hidden'); 
+      });
+    }
+
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      const centis = Math.floor((ms % 1000) / 10);
+      return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(centis).padStart(2,'0')}`;
+    }
+
+    function startSession() {
+      const title = sessionNameInput.value.trim();
+      if (!title) { 
+        alert("Please enter a session name."); 
+        return; 
+      }
+      
+      startTime = Date.now();
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      sessionNameInput.disabled = true;
+      
+      timerInterval = setInterval(() => {
+        timerDisplay.textContent = formatTime(Date.now() - startTime);
+      }, 50);
+    }
+
+    function stopSession() {
+      clearInterval(timerInterval);
+      stopBtn.disabled = true;
+      startBtn.disabled = false;
+      sessionNameInput.disabled = false;
+      
+      const end = Date.now();
+      const duration = end - startTime;
+      const title = sessionNameInput.value.trim();
+      
+      const newSession = { 
+        id: Date.now(), 
+        name: title, 
+        start: new Date(startTime).toLocaleString(), 
+        duration: formatTime(duration), 
+        durationMs: duration 
+      };
+      
+      const users = JSON.parse(localStorage.getItem('users')) || {};
+      users[currentUser.username] = users[currentUser.username] || { password: '', sessions: [] };
+      users[currentUser.username].sessions.push(newSession);
+      localStorage.setItem('users', JSON.stringify(users));
+      
+      renderSessions();
+      updateBadges();
+      timerDisplay.textContent = '00:00:00.00';
+      sessionNameInput.value = '';
+      
+      // Show a nice animation when session is saved
+      timerDisplay.style.transform = 'scale(1.05)';
+      setTimeout(() => {
+        timerDisplay.style.transform = 'scale(1)';
+      }, 300);
+    }
+
+    function calculateTotalHours() {
+      const users = JSON.parse(localStorage.getItem('users')) || {};
+      const sess = users[currentUser.username]?.sessions || [];
+      return sess.reduce((sum, s) => sum + (s.durationMs || 0), 0) / 3600000;
+    }
+
+    function getCurrentBadgeIndex(hours) {
+      for (let i = badgeSystem.length - 1; i >= 0; i--) {
+        if (hours >= badgeSystem[i].hours) return i;
+      }
+      return 0;
+    }
+
+    function updateBadges() {
+      const hours = calculateTotalHours();
+      const idx = getCurrentBadgeIndex(hours);
+      const current = badgeSystem[idx];
+      
+      currentBadge.innerHTML = `
+        <div class='badge ${current.class} current-badge'>
+          ${current.emoji} ${current.name}
+        </div>
+      `;
+      
+      if (idx < badgeSystem.length - 1) {
+        const next = badgeSystem[idx+1];
+        const progress = ((hours - current.hours)/(next.hours - current.hours))*100;
+        progressBar.style.width = `${Math.min(100, progress)}%`;
+        badgeInfo.textContent = `${Math.round(hours)}/${next.hours} hours to ${next.name}`;
+      } else {
+        progressBar.style.width = '100%';
+        badgeInfo.textContent = `Legendary ${current.name} with ${Math.round(hours)} hours!`;
+      }
+      
+      // === TOTAL HOURS DISPLAY === //
+      const existingTotalDisplay = document.querySelector('.total-hours');
+      if (existingTotalDisplay) existingTotalDisplay.remove();
+      
+      const totalHoursDisplay = document.createElement('div');
+      totalHoursDisplay.className = 'total-hours';
+      totalHoursDisplay.innerHTML = `
+        ⏱️ Total: <strong>${Math.round(hours * 10) / 10} hours</strong>
+      `;
+      document.querySelector('.badge-container').appendChild(totalHoursDisplay);
+      
+      // Update the badge grid
+      badgeGrid.innerHTML = '';
+      badgeSystem.forEach((b, i) => {
+        const badgeEl = document.createElement('div');
+        badgeEl.className = 'badge-item';
+        
+        if (i > idx) {
+          badgeEl.innerHTML = `
+            <div class="badge-icon ${b.class} locked-badge">${b.emoji}</div>
+            <div class="badge-name">${b.name}</div>
+            <div class="badge-requirement">${b.hours} hrs</div>
+          `;
+        } else {
+          badgeEl.innerHTML = `
+            <div class="badge-icon ${b.class}">${b.emoji}</div>
+            <div class="badge-name">${b.name}</div>
+            <div class="badge-requirement">Unlocked!</div>
+          `;
+        }
+        
+        badgeGrid.appendChild(badgeEl);
+      });
+    }
+
+    function renderSessions() {
+      const users = JSON.parse(localStorage.getItem('users')) || {};
+      const sess = users[currentUser.username]?.sessions || [];
+      
+      sessionList.innerHTML = '';
+      
+      if (sess.length === 0) {
+        sessionList.innerHTML = '<div style="text-align: center; color: var(--gray); padding: 2rem;">No sessions recorded yet. Start your first session!</div>';
+        return;
+      }
+      
+      sess.slice().reverse().forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'session';
+        
+        div.innerHTML = `
+          <div class="session-details">
+            <div class="session-name">${s.name}</div>
+            <div class="session-meta">
+              <span><strong>Started:</strong> ${s.start}</span>
+              <span><strong>Duration:</strong> ${s.duration}</span>
+            </div>
+          </div>
+          <button class='delete-btn' onclick='deleteSession(${s.id})'>Delete</button>
+        `;
+        
+        sessionList.appendChild(div);
+      });
+      
+      sessionCount.textContent = sess.length;
+      updateBadges();
+    }
+
+    function deleteSession(id) {
+      if (!confirm('Are you sure you want to delete this session?')) return;
+      
+      const users = JSON.parse(localStorage.getItem('users')) || {};
+      users[currentUser.username].sessions = users[currentUser.username].sessions.filter(s => s.id !== id);
+      localStorage.setItem('users', JSON.stringify(users));
+      renderSessions();
+    }
+
+    async function login() {
+      loginError.textContent = '';
+      const username = loginUsername.value.trim();
+      const password = loginPassword.value;
+      
+      if (!username || !password) {
+        loginError.textContent = 'Please enter both username and password';
+        return;
+      }
+      
+      const users = JSON.parse(localStorage.getItem('users')) || {};
+      
+      if (!users[username]) {
+        loginError.textContent = 'User does not exist';
+        return;
+      }
+      
+      const hashedPassword = await hashPassword(password);
+      
+      if (users[username].password !== hashedPassword) {
+        loginError.textContent = 'Invalid password';
+        return;
+      }
+      
+      currentUser = { username };
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      showApp();
+    }
+
+    async function signup() {
+      signupError.textContent = '';
+      const username = signupUsername.value.trim();
+      const password = signupPassword.value;
+      
+      if (!username || !password) {
+        signupError.textContent = 'Please enter both username and password';
+        return;
+      }
+      
+      if (password.length < 6) {
+        signupError.textContent = 'Password must be at least 6 characters';
+        return;
+      }
+      
+      const users = JSON.parse(localStorage.getItem('users')) || {};
+      
+      if (users[username]) {
+        signupError.textContent = 'Username already exists';
+        return;
+      }
+      
+      const hashedPassword = await hashPassword(password);
+      users[username] = { password: hashedPassword, sessions: [] };
+      
+      localStorage.setItem('users', JSON.stringify(users));
+      currentUser = { username };
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      showApp();
+    }
+
+    function logout() {
+      if (!confirm('Are you sure you want to logout?')) return;
+      
+      currentUser = null;
+      localStorage.removeItem('currentUser');
+      showAuth();
+      
+      // Clear form fields
+      loginUsername.value = '';
+      loginPassword.value = '';
+      signupUsername.value = '';
+      signupPassword.value = '';
+      loginError.textContent = '';
+      signupError.textContent = '';
+    }
+
+    function showApp() {
+      authContainer.classList.add('hidden');
+      appContent.classList.remove('hidden');
+      userInfo.textContent = `Welcome, ${currentUser.username}`;
+      renderSessions();
+      
+      // Change quote every 30 seconds
+      setInterval(() => {
+        quoteBox.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+        quoteBox.style.animation = 'fadeIn 1s';
+        setTimeout(() => {
+          quoteBox.style.animation = '';
+        }, 1000);
+      }, 30000);
+    }
+
+    function showAuth() {
+      authContainer.classList.remove('hidden');
+      appContent.classList.add('hidden');
+      userInfo.textContent = '';
+      loginForm.classList.remove('hidden');
+      signupForm.classList.add('hidden');
+    }
+  </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js').then(function (registration) {
+      console.log('Service Worker registered with scope:', registration.scope);
+    }).catch(function (error) {
+      console.log('Service Worker registration failed:', error);
+    });
+  }
+</script>
+
+</body>
+</html>
