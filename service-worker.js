@@ -3,8 +3,7 @@ const urlsToCache = [
   '/',
   '/index.htm',
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/icons/icon-w.png',  // Update this to point to your existing icon file
 ];
 
 // Install event: Cache assets
