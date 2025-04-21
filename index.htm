@@ -9,6 +9,7 @@
 <link rel="manifest" href="manifest.json">
 
   <style>
+
     :root {
       --primary: #4361ee;
       --primary-dark: #3a56d4;
@@ -539,6 +540,41 @@
         gap: 0.25rem;
       }
     }
+    /* Splash screen CSS */
+body {<!-- Splash screen -->
+<div id="splash-screen">
+  <img src="icon-w.png" alt="Workifie Logo" class="splash-logo" />
+</div>
+
+<!-- App content -->
+<div id="app-content" class="hidden">
+
+  display: none; /* Hide body initially */
+}
+
+#splash-screen {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #ffffff;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 9999;
+}
+
+.hidden {
+  display: none;
+}
+
+.splash-logo {
+  width: 192px;
+  height: 192px;
+}
+
   </style>
 </head>
 <body>
@@ -993,6 +1029,19 @@
     });
   }
 </script>
+  </div> <!-- Closing #app-content -->
+
+<script>
+  // Simulate loading, hide the splash screen when app is ready
+  window.onload = function() {
+    setTimeout(function() {
+      document.getElementById("splash-screen").classList.add("hidden");
+      document.getElementById("app-content").classList.remove("hidden");
+      document.body.style.display = "block";  // Show the app content
+    }, 1500);
+  }
+</script>
+
 
 </body>
 </html>
