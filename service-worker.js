@@ -1,16 +1,15 @@
-const CACHE_NAME = 'workifie-cache-v1';
+const CACHE_NAME = 'workifie-cache-v2';
 const urlsToCache = [
   '/',
   '/index.htm',
   '/manifest.json',
-  '/icon-w.png', // Fixed path if icon is directly in root
+  '/icon-w.png'
 ];
 
 // Install: Cache essential assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
   );
   self.skipWaiting();
 });
@@ -18,31 +17,53 @@ self.addEventListener('install', (event) => {
 // Fetch: Serve cached or fallback to network
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then((cachedResponse) => {
-        return cachedResponse || fetch(event.request);
-      })
+    caches.match(event.request).then((cachedResponse) => {
+      return cachedResponse || fetch(event.request);
+    })
   );
 });
 
-// Activate: Remove old caches
+// Activate: Clear old caches and register background sync
 self.addEventListener('activate', (event) => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
-      Promise.all(
+    (async () => {
+      const cacheNames = await caches.keys();
+      await Promise.all(
         cacheNames.map((cacheName) => {
           if (!cacheWhitelist.includes(cacheName)) {
             return caches.delete(cacheName);
           }
         })
-      )
-    )
+      );
+
+      // Background Sync registration
+      try {
+        await self.registration.sync.register('sync-data');
+      } catch (err) {
+        console.error('Background sync registration failed:', err);
+      }
+
+      // Periodic Sync registration (if supported)
+      if ('periodicSync' in self.registration) {
+        try {
+          const result = await navigator.permissions.query({ name: 'periodic-background-sync' });
+          if (result.state === 'granted') {
+            await self.registration.periodicSync.register('update-content', {
+              minInterval: 24 * 60 * 60 * 1000, // once a day
+            });
+          }
+        } catch (err) {
+          console.warn('Periodic Sync registration failed:', err);
+        }
+      }
+
+      self.clients.claim();
+    })()
   );
-  self.clients.claim();
 });
 
-// 🔄 Background Sync
+// Background Sync
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-data') {
     event.waitUntil(syncData());
@@ -50,12 +71,11 @@ self.addEventListener('sync', (event) => {
 });
 
 function syncData() {
-  // Replace this with your actual sync logic (API call, etc.)
   console.log('Syncing data with server...');
-  return Promise.resolve(); // Simulate successful sync
+  return Promise.resolve(); // Your real sync logic here
 }
 
-// 🕐 Periodic Sync (requires browser support and permission)
+// Periodic Sync
 self.addEventListener('periodicsync', (event) => {
   if (event.tag === 'update-content') {
     event.waitUntil(updateContent());
@@ -63,12 +83,11 @@ self.addEventListener('periodicsync', (event) => {
 });
 
 function updateContent() {
-  // Replace this with actual update logic
   console.log('Performing periodic background update...');
-  return Promise.resolve(); // Simulate update
+  return Promise.resolve(); // Your real update logic here
 }
 
-// 🔔 Push Notifications
+// Push Notifications
 self.addEventListener('push', (event) => {
   const data = event.data?.json() || {};
   const title = data.title || "Workifie Notification";
@@ -78,26 +97,5 @@ self.addEventListener('push', (event) => {
   };
   event.waitUntil(
     self.registration.showNotification(title, options)
-  );
-});
-
-// Ensure sync only happens once the service worker is activated
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      // Additional logic to register sync tasks once service worker is active
-      self.registration.sync.register('sync-data').catch(console.error);
-
-      // Periodic Sync (optional, requires permission)
-      if ('periodicSync' in self.registration) {
-        navigator.permissions.query({ name: 'periodic-background-sync' }).then(result => {
-          if (result.state === 'granted') {
-            self.registration.periodicSync.register('update-content', {
-              minInterval: 24 * 60 * 60 * 1000, // once a day
-            });
-          }
-        });
-      }
-    })
   );
 });
