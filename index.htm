@@ -989,13 +989,31 @@
   </script>
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').then(function (registration) {
-      console.log('Service Worker registered with scope:', registration.scope);
-    }).catch(function (error) {
-      console.log('Service Worker registration failed:', error);
+    navigator.serviceWorker.register('/service-worker.js').then(reg => {
+      console.log('Service Worker registered.');
+
+      // Background Sync
+      if ('sync' in reg) {
+        reg.sync.register('sync-data').catch(console.error);
+      }
+
+      // Periodic Sync (optional, requires permission)
+      if ('periodicSync' in reg) {
+        navigator.permissions.query({ name: 'periodic-background-sync' }).then(result => {
+          if (result.state === 'granted') {
+            reg.periodicSync.register('update-content', {
+              minInterval: 24 * 60 * 60 * 1000, // once a day
+            });
+          }
+        });
+      }
     });
   }
-</script>
 
+  // Ask for notification permission
+  if (Notification && Notification.permission !== 'granted') {
+    Notification.requestPermission();
+  }
+</script>
 </body>
 </html>
