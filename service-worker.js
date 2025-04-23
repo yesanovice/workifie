@@ -42,7 +42,6 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-
 // 🔄 Background Sync
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-data') {
@@ -55,7 +54,6 @@ function syncData() {
   console.log('Syncing data with server...');
   return Promise.resolve(); // Simulate successful sync
 }
-
 
 // 🕐 Periodic Sync (requires browser support and permission)
 self.addEventListener('periodicsync', (event) => {
@@ -70,7 +68,6 @@ function updateContent() {
   return Promise.resolve(); // Simulate update
 }
 
-
 // 🔔 Push Notifications
 self.addEventListener('push', (event) => {
   const data = event.data?.json() || {};
@@ -81,5 +78,26 @@ self.addEventListener('push', (event) => {
   };
   event.waitUntil(
     self.registration.showNotification(title, options)
+  );
+});
+
+// Ensure sync only happens once the service worker is activated
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      // Additional logic to register sync tasks once service worker is active
+      self.registration.sync.register('sync-data').catch(console.error);
+
+      // Periodic Sync (optional, requires permission)
+      if ('periodicSync' in self.registration) {
+        navigator.permissions.query({ name: 'periodic-background-sync' }).then(result => {
+          if (result.state === 'granted') {
+            self.registration.periodicSync.register('update-content', {
+              minInterval: 24 * 60 * 60 * 1000, // once a day
+            });
+          }
+        });
+      }
+    })
   );
 });
